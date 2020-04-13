@@ -14,15 +14,42 @@ class TransactionsRepository {
   }
 
   public all(): Transaction[] {
-    // TODO
+    return this.transactions;
   }
 
   public getBalance(): Balance {
-    // TODO
+    const income = this.transactions
+      .filter(each => each.type === 'income')
+      .reduce((acc, total) => {
+        return acc + total.value;
+      }, 0);
+
+    const outcome = this.transactions
+      .filter(each => each.type === 'outcome')
+      .reduce((acc, total) => {
+        return acc + total.value;
+      }, 0);
+
+    return {
+      income,
+      outcome,
+      total: income - outcome,
+    };
   }
 
-  public create(): Transaction {
-    // TODO
+  public create({ title, type, value }: Transaction): Transaction {
+    const insufficientBalance =
+      type === 'outcome' && this.getBalance().total < value;
+
+    if (insufficientBalance) {
+      throw Error('Insufficient money on account');
+    }
+
+    const transaction = new Transaction({ title, type, value });
+
+    this.transactions.push(transaction);
+
+    return transaction;
   }
 }
 
